@@ -36,3 +36,21 @@ python LandingPageCopyGenerator/main.py test.json result.json "New Landing Page:
 ## Installation
 
 1. Clone the repository.
+
+```bash
+git clone git@github.com:jahmad7/LandingPageCopyGenerator.git
+```
+
+2. cd into the directory.
+
+```bash
+cd LandingPageCopyGenerator
+```
+
+3. Install the required dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+4. Update the OpenAI API key in the `.env` file.
