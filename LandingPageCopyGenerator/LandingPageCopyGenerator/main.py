@@ -1,15 +1,71 @@
 import json
 import os
 import sys
+import openai
 
-def process_json(input_json, context):
-    # Process the JSON data and add the context information
-    # input_json['context'] = context
-    return input_json
+def extract_text_elements(json_data):
+    text_elements = {}
+
+    def recurse_boxes(boxes):
+        for box in boxes:
+            guid = box['guid']
+            if box["level"] == "widget":
+                if "options" in box:
+                    options = box["options"]
+                    if "text" in options:
+                        text_elements[guid] = {
+                            "type": box["type"],
+                            "text": options["text"]
+                        }
+                    elif "doc" in options and "content" in options["doc"]:
+                        for content in options["doc"]["content"]:
+                            if "content" in content:
+                                for item in content["content"]:
+                                    if "text" in item:
+                                        text_elements[guid] = {
+                                            "type": content["type"],
+                                            "text": item["text"]
+                                        }
+            if "boxes" in box:
+                recurse_boxes(box["boxes"])
+
+    recurse_boxes(json_data["boxes"])
+    return text_elements
+
+def update_text_elements(json_data, updated_texts):
+    def recurse_boxes(boxes):
+        for box in boxes:
+            guid = box['guid']
+            if box["level"] == "widget":
+                if "options" in box:
+                    options = box["options"]
+                    if "text" in options and guid in updated_texts:
+                        options["text"] = updated_texts[guid]["new_text"]
+                    elif "doc" in options and "content" in options["doc"]:
+                        for content in options["doc"]["content"]:
+                            if "content" in content:
+                                for item in content["content"]:
+                                    if "text" in item and guid in updated_texts:
+                                        item["text"] = updated_texts[guid]["new_text"]
+            if "boxes" in box:
+                recurse_boxes(box["boxes"])
+
+    recurse_boxes(json_data["boxes"])
+
+def generate_new_texts(text_elements, context):
+    new_texts = {}
+    openai.api_key = os.getenv("OPENAI_API_KEY")
+    for guid, element in text_elements.items():
+        new_texts[guid] = {
+            "type": element["type"],
+            "old_text": element["text"],
+            "new_text": "stuff"
+        }
+    return new_texts
 
 def main():
     if len(sys.argv) != 4:
-        print("Usage: python main.py <input_json_file> <output_json_file> <context_string>")
+        print("Usage: python main.py <input_json_file> <output_json_file> '<context_string>'")
         sys.exit(1)
 
     input_file = sys.argv[1]
@@ -24,19 +80,30 @@ def main():
         print(f"Error reading input file: {e}")
         sys.exit(1)
 
-    output_data = process_json(input_data, context_string)
+    text_elements = extract_text_elements(input_data)
+    updated_texts = generate_new_texts(text_elements, context_string)
+    update_text_elements(input_data, updated_texts)
 
     if not os.path.exists(results_dir):
         os.makedirs(results_dir)
 
     output_path = os.path.join(results_dir, output_file)
+    extraction_output_path = os.path.join(results_dir, f'extraction_{output_file}')
 
     try:
         with open(output_path, 'w') as f:
-            json.dump(output_data, f, indent=4)
+            json.dump(input_data, f, indent=4)
         print(f"Output saved to {output_path}")
     except Exception as e:
         print(f"Error writing output file: {e}")
+        sys.exit(1)
+
+    try:
+        with open(extraction_output_path, 'w') as f:
+            json.dump(updated_texts, f, indent=4)
+        print(f"Extraction output saved to {extraction_output_path}")
+    except Exception as e:
+        print(f"Error writing extraction output file: {e}")
         sys.exit(1)
 
 if __name__ == '__main__':
