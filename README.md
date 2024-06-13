@@ -164,14 +164,14 @@ Currently, the process to generate new text for the page is somewhat time-consum
 - ***Batch API Calls:*** I would experiment with batching the requests into a single API call, where all text elements are processed at once. This could significantly reduce the time to completion while maintaining the quality of the responses.
 - ***Prioritizing Speed:*** In this challenge, the priority was on the quality of responses over speed. Future iterations would aim to balance both, optimizing for faster response times without compromising on the quality.
 
-2. Integrating Image Generation
+2. **Integrating Image Generation**
 
 There are images on the landing page, which are currently not addressed by the text generation process. To enhance the overall page redesign:
 
 - ***Image Generation:*** After generating the new text for each section that includes an image, I would use OPENAI image generation API to create new images that complement the updated copy.
  - ***Consistency:*** Ensuring that the new images align well with the new text will create a more cohesive and visually appealing landing page.
 
-3. Enhancing Lead Page Effectiveness
+3. **Enhancing Lead Page Effectiveness**
 
 To make the landing page more effective in converting leads:
 
