@@ -58,6 +58,9 @@ def update_text_elements(json_data, updated_texts):
 def generate_new_texts(text_elements, context):
     new_texts = {}
     client = OpenAI(api_key = os.getenv("OPENAI_API_KEY"))
+
+    all_generated_texts = []
+
     for guid, element in text_elements.items():
         max_length = int(len(element["text"]) * 1.15)
 
@@ -65,6 +68,7 @@ def generate_new_texts(text_elements, context):
         old_texts_in_section = [e["text"] for e in text_elements.values() if e["sectionName"] == section_name]
         new_texts_in_section = [t["new_text"] for t in new_texts.values() if t["sectionName"] == section_name]
 
+        all_generated_texts_str = "\n".join([f"{txt['sectionName']} {txt['type']}: {txt['new_text']}" for txt in all_generated_texts])
 
         prompt = (
             f"Generate a new {element['type']} text for a page with the context '{context}'. "
@@ -72,11 +76,11 @@ def generate_new_texts(text_elements, context):
             f"The text is from the section: '{section_name}', which aims to convert customers into leads. "
             f"The following are all the old texts in this section: {old_texts_in_section}. "
             f"The new texts generated so far in this section are: {new_texts_in_section}. "
+            f"The following texts have been generated so far: {all_generated_texts_str}. "
             "Analyze the format and content of the current text and generate new text in the same format and context. "
             "For example, if the current text is a company name, the new text should also be a company name. "
             "If the current text is a question, the new text should also be a question. "
             "If the current text is a name and position, the new text should also follow the same format. "
-            "If the previous text in the section is a question, the new text should provide an answer to that question."
             "Do not reuse any of the existing content. "
             f"Ensure the new text fits within similar character limits and does not exceed {max_length} characters. "
             "Only provide the new text without any headers or additional information."
@@ -89,6 +93,7 @@ def generate_new_texts(text_elements, context):
             ]
         )
         new_text = response.choices[0].message.content.strip()
+        print(prompt)
         print("TYPE: ", element['type']) # left in the print statements so you can see the progress of the program in the terminal
         print("OLD TEXT: ", element['text'])
         print("NEW TEXT: ",new_text)
