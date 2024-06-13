@@ -71,14 +71,15 @@ The goal is to update the text content of a JSON file representing a landing pag
 
 1. Extract Text from JSON File:
 
-- Recursive Function: I wrote a recursive function to traverse the JSON structure. This function moves through "boxes" until it reaches a "widget" level where it checks for "options" or "doc" objects to find text content.
-- Storing Data: The extracted text, along with its type and location (using the GUID), is stored in a hash map. This ensures efficient access and updating of text elements.
+- Recursive Function: This function navigates through the JSON structure, reaching "widget" levels to locate text content within "options" or "doc" objects.
+- Section Tracking: The function also tracks the section name to provide context for each text element.
+- Efficient Storage: Text elements are stored in a hash map, including the type, location, and section name, ensuring efficient access and updates.
 
 2. Use OpenAI API for Text Generation:
 
-- Single API Call: To optimize for time and cost, I designed the solution to make a single call to OpenAI's API. The prompt includes the entire context and structure, asking for updated values for each text field based on the new page context provided by the user.
-
-- Storing New Text: The responses are stored in the same hash map, now including both old and new text for each GUID.
+- API Calls by Section: Prompts are constructed based on the section context, incorporating old texts, new texts, and section-specific information to guide the AI in generating relevant content.
+- Consideration of Format: The prompt instructs the AI to maintain the format of the original text (e.g., company name, question, name and position) and ensure new text aligns with the section's purpose.
+- Storing Responses: New text responses are stored alongside old texts in the hash map, preserving the section context and ensuring consistency across the page.
 
 3. Update JSON with New Text:
 
@@ -89,20 +90,36 @@ The goal is to update the text content of a JSON file representing a landing pag
 - Output JSON File: The updated JSON structure is saved to an output file (output.json) in a results folder.
 - Extraction Summary File: A separate file (extraction_output_filename.json) is also created. This file contains the GUID, type, old text, and new text for each updated text element, providing a quick reference without needing to parse the entire JSON file.
 
+
 ### Detailed Explanation of the Code
 The code is designed to be modular and efficient, ensuring ease of maintenance and scalability. Here are the key functions:
 
 - extract_text_elements(json_data):
 
-Recursively traverses the JSON structure to extract text elements and store them in a hash map with GUID as the key.
+Purpose: Recursively traverses the JSON structure to extract text elements.
+Process: Moves through "boxes" until it reaches "widget" levels, where it looks for "options" or "doc" objects to find text content.
+Output: Stores the extracted text, type, GUID, and section name in a hash map for efficient access and updating.
 
-- generate_new_texts(text_elements, context):
+- generate_new_texts(text_elements, context, json_summary):
 
-Uses OpenAI's API to generate new text based on the provided context and updates the hash map with new text values.
+Purpose: Uses OpenAI's API to generate new text based on the provided context.
+Process:
+Constructs prompts based on the section context, including the section name, old texts, and new texts generated so far.
+Ensures the AI generates text that maintains the format of the original text (e.g., company name, question, name and position).
+Provides specific instructions to ensure the new text is contextually appropriate and maintains continuity within the section.
+Output: Updates the hash map with new text values, including the section context.
 
 - update_text_elements(json_data, updated_texts):
 
-Recursively traverses the JSON structure again to update the text elements with new values from the hash map.
-main():
+Purpose: Recursively traverses the JSON structure again to update the text elements with new values.
+Process: Uses the hash map to replace old text elements with new ones, ensuring the JSON structure is updated accordingly.
 
-The main function orchestrates the process: reading the input JSON file, extracting text elements, generating new text, updating the JSON structure, and saving the output files.
+- main():
+
+Purpose: Orchestrates the entire process.
+Process:
+Reads the input JSON file.
+Extracts text elements using extract_text_elements.
+Generates new text using generate_new_texts.
+Updates the JSON structure with update_text_elements.
+Saves the updated JSON structure and extraction output to output files.
