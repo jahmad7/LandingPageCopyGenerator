@@ -60,6 +60,7 @@ pip install -r requirements.txt
 To make the solution easy to implement, I created a simple Python program that can be run from the command line. Here's a clear explanation of my approach to solving the problem, which is outlined step-by-step below:
 
 ### Overview
+
 The goal is to update the text content of a JSON file representing a landing page. The JSON file contains nested structures where text content is found at the "widget" level within "options" or "doc" objects. We need to:
 
 1. Extract the text elements, including their types and locations.
@@ -92,6 +93,7 @@ The goal is to update the text content of a JSON file representing a landing pag
 
 
 ### Detailed Explanation of the Code
+
 The code is designed to be modular and efficient, ensuring ease of maintenance and scalability. Here are the key functions:
 
 - extract_text_elements(json_data):
