@@ -6,7 +6,7 @@ from openai import OpenAI
 def extract_text_elements(json_data):
     text_elements = {}
 
-    def recurse_boxes(boxes):
+    def recurse_boxes(boxes, section_name=None):
         for box in boxes:
             guid = box['guid']
             if box["level"] == "widget":
@@ -14,8 +14,9 @@ def extract_text_elements(json_data):
                     options = box["options"]
                     if "text" in options:
                         text_elements[guid] = {
-                            "type": box["type"],
-                            "text": options["text"]
+                            "type": box.get("type", "unknown"),
+                            "text": options["text"],
+                            "sectionName": section_name
                         }
                     elif "doc" in options and "content" in options["doc"]:
                         for content in options["doc"]["content"]:
@@ -23,11 +24,13 @@ def extract_text_elements(json_data):
                                 for item in content["content"]:
                                     if "text" in item:
                                         text_elements[guid] = {
-                                            "type": content["type"],
-                                            "text": item["text"]
+                                            "type": content.get("type", "unknown"),
+                                            "text": item["text"],
+                                            "sectionName": section_name
                                         }
             if "boxes" in box:
-                recurse_boxes(box["boxes"])
+                next_section_name = box.get("name", section_name) if box["level"] == "section" else section_name
+                recurse_boxes(box["boxes"], next_section_name)
 
     recurse_boxes(json_data["boxes"])
     return text_elements
@@ -61,7 +64,8 @@ def summarize_json_structure(json_data):
                 summary.append({
                     "path": new_path,
                     "guid": box['guid'],
-                    "type": box.get('type', 'unknown')
+                    "type": box.get('type', 'unknown'),
+                    "sectionName": box.get('name', 'Unknown Section')
                 })
             if "boxes" in box:
                 recurse_boxes(box["boxes"], new_path)
@@ -71,15 +75,20 @@ def summarize_json_structure(json_data):
 
 def generate_new_texts(text_elements, context, json_summary):
     new_texts = {}
-    last_generated_text = ""
     client = OpenAI(api_key = os.getenv("OPENAI_API_KEY"))
     for guid, element in text_elements.items():
         max_length = int(len(element["text"]) * 1.15)
+
+        section_name = element["sectionName"]
+        old_texts_in_section = [e["text"] for e in text_elements.values() if e["sectionName"] == section_name]
+        new_texts_in_section = [t["new_text"] for t in new_texts.values() if t["sectionName"] == section_name]
+
         prompt = (
             f"Generate a new {element['type']} text for a page with the context '{context}'. "
             f"The current text is: '{element['text']}'. "
-            f"The last generated text is: '{last_generated_text}'. "
-            f"The following is a summary of the JSON structure of the page to help understand the context and purpose of each text element: {json.dumps(json_summary)}. "
+            f"The text is from a section titled: '{section_name}', use the name to understand the purpose of the section"
+            f"The following are all the old texts in this section: {old_texts_in_section}. "
+            f"The new texts generated so far in this section are: {new_texts_in_section}. "
             "Analyze the format and content of the current text and generate new text in the same format and context. "
             "For example, if the current text is a company name, the new text should also be a company name. "
             "If the current text is a question, the new text should also be a question. "
@@ -101,11 +110,11 @@ def generate_new_texts(text_elements, context, json_summary):
         print(response.choices[0].message.content.strip())
         print("-------------------------------")
         new_texts[guid] = {
+            "sectionName": element["sectionName"],
             "type": element["type"],
             "old_text": element["text"],
             "new_text": new_text
         }
-        last_generated_text = new_text
     return new_texts
 
 def main():
