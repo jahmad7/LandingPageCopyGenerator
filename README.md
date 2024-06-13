@@ -110,7 +110,9 @@ The goal is to update the text content of a JSON file representing a landing pag
 
 The code is designed to be modular and efficient, ensuring ease of maintenance and scalability. Here are the key functions:
 
-- extract_text_elements(json_data):
+```python
+extract_text_elements(json_data)
+```
 
 **Purpose:** Recursively traverses the JSON structure to extract text elements.
 
@@ -118,7 +120,9 @@ The code is designed to be modular and efficient, ensuring ease of maintenance a
 
 **Output:** Stores the extracted text, type, GUID, and section name in a hash map for efficient access and updating.
 
-- generate_new_texts(text_elements, context):
+```python
+generate_new_texts(text_elements, context)
+```
 
 **Purpose:** Uses OpenAI's API to generate new text based on the provided context.
 
@@ -129,13 +133,17 @@ Provides specific instructions to ensure the new text is contextually appropriat
 
 **Output:** Updates the hash map with new text values, including the section context.
 
-- update_text_elements(json_data, updated_texts):
+```python
+- update_text_elements(json_data, updated_texts)
+```
 
 **Purpose:** Recursively traverses the JSON structure again to update the text elements with new values.
 
 **Process:** Uses the hash map to replace old text elements with new ones, ensuring the JSON structure is updated accordingly.
 
-- main():
+```python
+main():
+```
 
 **Purpose:** Orchestrates the entire process.
 
