@@ -178,3 +178,4 @@ To make the landing page more effective in converting leads:
 - ***Understanding Lead Pages***: I would research more about what makes a great lead page, identifying key elements that drive conversions.
 - ***Providing Context***: Using this knowledge, I would give the model more context about what each section of the page should accomplish (e.g., capturing interest, building trust, encouraging action).
 - ***Scoring Generated Copy***: After generating the copy, I would implement a scoring system where the model evaluates the effectiveness of the text based on predefined criteria. Over time, I would compare these scores with actual user engagement metrics to refine and improve the model's ability to create high-converting copy.
+- ***Internet Function Research***: I would also add in functionality to research the internet about the context that the user provides to generate more relevant copy.
