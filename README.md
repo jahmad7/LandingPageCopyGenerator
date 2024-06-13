@@ -134,7 +134,7 @@ Provides specific instructions to ensure the new text is contextually appropriat
 **Output:** Updates the hash map with new text values, including the section context.
 
 ```python
-- update_text_elements(json_data, updated_texts)
+update_text_elements(json_data, updated_texts)
 ```
 
 **Purpose:** Recursively traverses the JSON structure again to update the text elements with new values.
