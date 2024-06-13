@@ -93,7 +93,7 @@ def generate_new_texts(text_elements, context):
         # new_text = response.choices[0].message.content.strip()
         # print(response.choices[0].message.content.strip())
         # print("-------------------------------")
-        # new_texts[guid] = {
+        new_texts[guid] = {
             "sectionName": element["sectionName"],
             "type": element["type"],
             "old_text": element["text"],
