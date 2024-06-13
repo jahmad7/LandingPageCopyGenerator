@@ -7,7 +7,7 @@ A simple program that takes in a JSON file from LeadPages with the structure of 
 ## Usage
 
 ```bash
-python LandingPageCopyGenerator/main.py test.json <output_json_file> "<Name of Page: Purpose of page>"
+python LandingPageCopyGenerator/main.py test.json output1.json "Leadpages: High-performing landing pages without the hassle"
 ```
 
 ## Arguments
