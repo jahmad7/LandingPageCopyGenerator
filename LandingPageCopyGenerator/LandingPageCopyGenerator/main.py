@@ -89,10 +89,10 @@ def generate_new_texts(text_elements, context):
             ]
         )
         new_text = response.choices[0].message.content.strip()
-        # print("TYPE: ", element['type'])
-        # print("OLD TEXT: ", element['text'])
-        # print("NEW TEXT: ",new_text)
-        # print("-------------------------------")
+        print("TYPE: ", element['type']) # left in the print statements so you can see the progress of the program in the terminal
+        print("OLD TEXT: ", element['text'])
+        print("NEW TEXT: ",new_text)
+        print("-------------------------------")
         new_texts[guid] = {
             "sectionName": element["sectionName"],
             "type": element["type"],
