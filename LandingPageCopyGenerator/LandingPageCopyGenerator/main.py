@@ -55,25 +55,7 @@ def update_text_elements(json_data, updated_texts):
 
     recurse_boxes(json_data["boxes"])
 
-def summarize_json_structure(json_data):
-    summary = []
-    def recurse_boxes(boxes, path=""):
-        for box in boxes:
-            new_path = f"{path} > {box.get('type', 'unknown')}" if path else box.get('type', 'unknown')
-            if box["level"] == "widget":
-                summary.append({
-                    "path": new_path,
-                    "guid": box['guid'],
-                    "type": box.get('type', 'unknown'),
-                    "sectionName": box.get('name', 'Unknown Section')
-                })
-            if "boxes" in box:
-                recurse_boxes(box["boxes"], new_path)
-
-    recurse_boxes(json_data["boxes"])
-    return summary
-
-def generate_new_texts(text_elements, context, json_summary):
+def generate_new_texts(text_elements, context):
     new_texts = {}
     client = OpenAI(api_key = os.getenv("OPENAI_API_KEY"))
     for guid, element in text_elements.items():
@@ -83,16 +65,18 @@ def generate_new_texts(text_elements, context, json_summary):
         old_texts_in_section = [e["text"] for e in text_elements.values() if e["sectionName"] == section_name]
         new_texts_in_section = [t["new_text"] for t in new_texts.values() if t["sectionName"] == section_name]
 
+
         prompt = (
             f"Generate a new {element['type']} text for a page with the context '{context}'. "
             f"The current text is: '{element['text']}'. "
-            f"The text is from a section titled: '{section_name}', use the name to understand the purpose of the section"
+            f"The text is from the section: '{section_name}', which aims to convert customers into leads. "
             f"The following are all the old texts in this section: {old_texts_in_section}. "
             f"The new texts generated so far in this section are: {new_texts_in_section}. "
             "Analyze the format and content of the current text and generate new text in the same format and context. "
             "For example, if the current text is a company name, the new text should also be a company name. "
             "If the current text is a question, the new text should also be a question. "
             "If the current text is a name and position, the new text should also follow the same format. "
+            "If the previous text in the section is a question, the new text should provide an answer to that question."
             "Do not reuse any of the existing content. "
             f"Ensure the new text fits within similar character limits and does not exceed {max_length} characters. "
             "Only provide the new text without any headers or additional information."
@@ -104,12 +88,12 @@ def generate_new_texts(text_elements, context, json_summary):
                 {"role": "user", "content": prompt}
             ]
         )
-        print("TYPE: ", element['type'])
-        print("TEXT: ", element['text'])
-        new_text = response.choices[0].message.content.strip()
-        print(response.choices[0].message.content.strip())
-        print("-------------------------------")
-        new_texts[guid] = {
+        # print("TYPE: ", element['type'])
+        # print("TEXT: ", element['text'])
+        # new_text = response.choices[0].message.content.strip()
+        # print(response.choices[0].message.content.strip())
+        # print("-------------------------------")
+        # new_texts[guid] = {
             "sectionName": element["sectionName"],
             "type": element["type"],
             "old_text": element["text"],
@@ -136,8 +120,7 @@ def main():
 
 
     text_elements = extract_text_elements(input_data)
-    json_summary = summarize_json_structure(input_data)
-    updated_texts = generate_new_texts(text_elements, context_string, json_summary)
+    updated_texts = generate_new_texts(text_elements, context_string)
     update_text_elements(input_data, updated_texts)
 
     if not os.path.exists(results_dir):
