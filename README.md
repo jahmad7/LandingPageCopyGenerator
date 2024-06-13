@@ -84,7 +84,7 @@ The goal is to update the text content of a JSON file representing a landing pag
 
 ### Steps to Accomplish the Goal
 
-1. *** Extract Text from JSON File:***
+1. **Extract Text from JSON File:**
 
 - **Recursive Function:** This function navigates through the JSON structure, reaching "widget" levels to locate text content within "options" or "doc" objects.
 - **Section Tracking:** The function also tracks the section name to provide context for each text element.
@@ -113,32 +113,39 @@ The code is designed to be modular and efficient, ensuring ease of maintenance a
 - extract_text_elements(json_data):
 
 **Purpose:** Recursively traverses the JSON structure to extract text elements.
+
 **Process:** Moves through "boxes" until it reaches "widget" levels, where it looks for "options" or "doc" objects to find text content.
+
 **Output:** Stores the extracted text, type, GUID, and section name in a hash map for efficient access and updating.
 
 - generate_new_texts(text_elements, context):
 
 **Purpose:** Uses OpenAI's API to generate new text based on the provided context.
+
 **Process:**
 Constructs prompts based on the section context, including the section name, old texts, and new texts generated so far.
 Ensures the AI generates text that maintains the format of the original text (e.g., company name, question, name and position).
 Provides specific instructions to ensure the new text is contextually appropriate and maintains continuity within the section.
+
 **Output:** Updates the hash map with new text values, including the section context.
 
 - update_text_elements(json_data, updated_texts):
 
 **Purpose:** Recursively traverses the JSON structure again to update the text elements with new values.
+
 **Process:** Uses the hash map to replace old text elements with new ones, ensuring the JSON structure is updated accordingly.
 
 - main():
 
 **Purpose:** Orchestrates the entire process.
+
 **Process:**
-Reads the input JSON file.
-Extracts text elements using extract_text_elements.
-Generates new text using generate_new_texts.
-Updates the JSON structure with update_text_elements.
-Saves the updated JSON structure and extraction output to output files.
+
+- Reads the input JSON file.
+- Extracts text elements using extract_text_elements.
+- Generates new text using generate_new_texts.
+- Updates the JSON structure with update_text_elements.
+- Saves the updated JSON structure and extraction output to output files.
 
 ### Future Improvements
 
