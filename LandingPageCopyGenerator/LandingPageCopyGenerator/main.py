@@ -88,10 +88,10 @@ def generate_new_texts(text_elements, context):
                 {"role": "user", "content": prompt}
             ]
         )
+        new_text = response.choices[0].message.content.strip()
         # print("TYPE: ", element['type'])
-        # print("TEXT: ", element['text'])
-        # new_text = response.choices[0].message.content.strip()
-        # print(response.choices[0].message.content.strip())
+        # print("OLD TEXT: ", element['text'])
+        # print("NEW TEXT: ",new_text)
         # print("-------------------------------")
         new_texts[guid] = {
             "sectionName": element["sectionName"],
