@@ -6,28 +6,32 @@ from openai import OpenAI
 def extract_text_elements(json_data):
     text_elements = {}
 
+    def add_text_element(guid, element_type, text, section_name):
+        text_elements[guid] = {
+            "type": element_type,
+            "text": text,
+            "sectionName": section_name
+        }
+
+    def handle_doc_content(options, guid, section_name):
+        if "doc" in options and "content" in options["doc"]:
+            for content in options["doc"]["content"]:
+                if "content" in content:
+                    for item in content["content"]:
+                        if "text" in item:
+                            add_text_element(guid, content.get("type", "unknown"), item["text"], section_name)
+
+    def handle_options(box, section_name):
+        options = box.get("options", {})
+        if "text" in options:
+            add_text_element(box['guid'], box.get("type", "unknown"), options["text"], section_name)
+        else:
+            handle_doc_content(options, box['guid'], section_name)
+
     def recurse_boxes(boxes, section_name=None):
         for box in boxes:
-            guid = box['guid']
-            if box["level"] == "widget":
-                if "options" in box:
-                    options = box["options"]
-                    if "text" in options:
-                        text_elements[guid] = {
-                            "type": box.get("type", "unknown"),
-                            "text": options["text"],
-                            "sectionName": section_name
-                        }
-                    elif "doc" in options and "content" in options["doc"]:
-                        for content in options["doc"]["content"]:
-                            if "content" in content:
-                                for item in content["content"]:
-                                    if "text" in item:
-                                        text_elements[guid] = {
-                                            "type": content.get("type", "unknown"),
-                                            "text": item["text"],
-                                            "sectionName": section_name
-                                        }
+            if box["level"] == "widget" and "options" in box:
+                handle_options(box, section_name)
             if "boxes" in box:
                 next_section_name = box.get("name", section_name) if box["level"] == "section" else section_name
                 recurse_boxes(box["boxes"], next_section_name)
@@ -36,20 +40,28 @@ def extract_text_elements(json_data):
     return text_elements
 
 def update_text_elements(json_data, updated_texts):
+    def update_text_in_options(options, guid):
+        if "text" in options and guid in updated_texts:
+            options["text"] = updated_texts[guid]["new_text"]
+
+    def update_text_in_doc_content(doc_content, guid):
+        for content in doc_content:
+            if "content" in content:
+                for item in content["content"]:
+                    if "text" in item and guid in updated_texts:
+                        item["text"] = updated_texts[guid]["new_text"]
+
+    def process_box(box):
+        guid = box['guid']
+        if box["level"] == "widget":
+            if "options" in box:
+                update_text_in_options(box["options"], guid)
+                if "doc" in box["options"] and "content" in box["options"]["doc"]:
+                    update_text_in_doc_content(box["options"]["doc"]["content"], guid)
+
     def recurse_boxes(boxes):
         for box in boxes:
-            guid = box['guid']
-            if box["level"] == "widget":
-                if "options" in box:
-                    options = box["options"]
-                    if "text" in options and guid in updated_texts:
-                        options["text"] = updated_texts[guid]["new_text"]
-                    elif "doc" in options and "content" in options["doc"]:
-                        for content in options["doc"]["content"]:
-                            if "content" in content:
-                                for item in content["content"]:
-                                    if "text" in item and guid in updated_texts:
-                                        item["text"] = updated_texts[guid]["new_text"]
+            process_box(box)
             if "boxes" in box:
                 recurse_boxes(box["boxes"])
 
